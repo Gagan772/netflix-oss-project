@@ -70,6 +70,15 @@ resource "aws_security_group" "eureka_server" {
     cidr_blocks = [var.vpc_cidr]
   }
 
+  # Allow Eureka dashboard access from internet
+  ingress {
+    description = "Eureka Dashboard from internet"
+    from_port   = var.eureka_server_port
+    to_port     = var.eureka_server_port
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_http_cidr]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

@@ -257,40 +257,49 @@ resource "null_resource" "sanity_check" {
       $passed = 0
       $failed = 0
       
-      # Test REST endpoint
+      # Test REST endpoint (user-bff -> middleware -> backend)
       try {
-        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/users/health" -TimeoutSec 30
-        $results += "REST Health: PASSED"
-        $passed++
-      } catch {
-        $results += "REST Health: FAILED - $($_.Exception.Message)"
-        $failed++
-      }
-      
-      # Test REST data endpoint
-      try {
-        $body = @{name="TestUser";email="test@example.com"} | ConvertTo-Json
-        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/users/data" -Method POST -Body $body -ContentType "application/json" -TimeoutSec 30
-        if ($response.servedBy -eq "backend") {
-          $results += "REST->Middleware->Backend: PASSED"
+        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/rest/hello?name=SanityTest" -TimeoutSec 30
+        if ($response.greeting -like "*SanityTest*") {
+          $results += "REST Endpoint: PASSED"
           $passed++
         } else {
-          $results += "REST->Middleware->Backend: FAILED - Unexpected response"
+          $results += "REST Endpoint: FAILED - Unexpected response"
           $failed++
         }
       } catch {
-        $results += "REST->Middleware->Backend: FAILED - $($_.Exception.Message)"
+        $results += "REST Endpoint: FAILED - $($_.Exception.Message)"
+        $failed++
+      }
+      
+      # Test mTLS chain (verify backend response comes through middleware with mTLS)
+      try {
+        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/rest/hello?name=mTLSTest" -TimeoutSec 30
+        if ($response.backendResponse -and $response.backendResponse.mtlsVerified -eq $true) {
+          $results += "mTLS Chain (user-bff->middleware->backend): PASSED"
+          $passed++
+        } else {
+          $results += "mTLS Chain: FAILED - mtlsVerified not true"
+          $failed++
+        }
+      } catch {
+        $results += "mTLS Chain: FAILED - $($_.Exception.Message)"
         $failed++
       }
       
       # Test GraphQL endpoint
       try {
-        $gqlBody = @{query="{ health }"} | ConvertTo-Json
-        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/users/graphql" -Method POST -Body $gqlBody -ContentType "application/json" -TimeoutSec 30
-        $results += "GraphQL Health: PASSED"
-        $passed++
+        $gqlBody = @{query='{ userStatus(userId: "sanity-test") { status servedBy mtlsVerified } }'} | ConvertTo-Json
+        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/graphql" -Method POST -Body $gqlBody -ContentType "application/json" -TimeoutSec 30
+        if ($response.data.userStatus.servedBy -eq "backend") {
+          $results += "GraphQL Endpoint: PASSED"
+          $passed++
+        } else {
+          $results += "GraphQL Endpoint: FAILED - Unexpected response"
+          $failed++
+        }
       } catch {
-        $results += "GraphQL Health: FAILED - $($_.Exception.Message)"
+        $results += "GraphQL Endpoint: FAILED - $($_.Exception.Message)"
         $failed++
       }
       
@@ -298,6 +307,7 @@ resource "null_resource" "sanity_check" {
       $report = "Netflix OSS Sanity Check Report`n"
       $report += "================================`n"
       $report += "Gateway: http://$gateway_ip`:$gateway_port`n"
+      $report += "Eureka: http://${aws_instance.eureka_server.public_ip}:${var.eureka_server_port}`n"
       $report += "Timestamp: $(Get-Date)`n"
       $report += "`nResults:`n"
       $results | ForEach-Object { $report += "  - $_`n" }
