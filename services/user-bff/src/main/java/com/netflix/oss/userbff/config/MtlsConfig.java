@@ -6,6 +6,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -44,8 +45,11 @@ public class MtlsConfig {
                 .loadKeyMaterial(keyStoreFile, keyStorePassword.toCharArray(), keyPassword.toCharArray())
                 .build();
 
+        // Use NoopHostnameVerifier because middleware IP is dynamic in cloud environment
+        // mTLS still validates the certificate chain through the CA
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(sslContext)
+                .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                 .build();
 
         HttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()

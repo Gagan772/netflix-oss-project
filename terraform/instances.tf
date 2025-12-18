@@ -19,18 +19,9 @@ resource "aws_instance" "config_server" {
   }
 
   user_data = base64encode(templatefile("${path.module}/provisioning/config-server.sh", {
-    service_name     = "config-server"
-    service_port     = var.config_server_port
-    service_user     = "svc_config"
-    eureka_host      = "" # Config server doesn't need Eureka initially
-    config_host      = ""
-    middleware_host  = ""
-    backend_host     = ""
-    ca_cert          = local.ca_cert_content
-    server_cert      = ""
-    server_key       = ""
-    client_cert      = ""
-    client_key       = ""
+    service_name = "config-server"
+    service_port = var.config_server_port
+    service_user = "svc_config"
   }))
 
   tags = {
@@ -58,19 +49,11 @@ resource "aws_instance" "eureka_server" {
   }
 
   user_data = base64encode(templatefile("${path.module}/provisioning/eureka-server.sh", {
-    service_name     = "eureka-server"
-    service_port     = var.eureka_server_port
-    service_user     = "svc_eureka"
-    config_host      = aws_instance.config_server.private_ip
-    config_port      = var.config_server_port
-    eureka_host      = ""
-    middleware_host  = ""
-    backend_host     = ""
-    ca_cert          = local.ca_cert_content
-    server_cert      = ""
-    server_key       = ""
-    client_cert      = ""
-    client_key       = ""
+    service_name = "eureka-server"
+    service_port = var.eureka_server_port
+    service_user = "svc_eureka"
+    config_host  = aws_instance.config_server.private_ip
+    config_port  = var.config_server_port
   }))
 
   tags = {
@@ -99,20 +82,13 @@ resource "aws_instance" "backend" {
   }
 
   user_data = base64encode(templatefile("${path.module}/provisioning/backend.sh", {
-    service_name     = "backend"
-    service_port     = var.backend_port
-    service_user     = "svc_backend"
-    config_host      = aws_instance.config_server.private_ip
-    config_port      = var.config_server_port
-    eureka_host      = aws_instance.eureka_server.private_ip
-    eureka_port      = var.eureka_server_port
-    middleware_host  = ""
-    backend_host     = ""
-    ca_cert          = local.ca_cert_content
-    server_cert      = ""
-    server_key       = ""
-    client_cert      = ""
-    client_key       = ""
+    service_name = "backend"
+    service_port = var.backend_port
+    service_user = "svc_backend"
+    config_host  = aws_instance.config_server.private_ip
+    config_port  = var.config_server_port
+    eureka_host  = aws_instance.eureka_server.private_ip
+    eureka_port  = var.eureka_server_port
   }))
 
   tags = {
@@ -141,21 +117,18 @@ resource "aws_instance" "middleware" {
   }
 
   user_data = base64encode(templatefile("${path.module}/provisioning/middleware.sh", {
-    service_name     = "middleware"
-    service_port     = var.middleware_port
-    service_user     = "svc_middleware"
-    config_host      = aws_instance.config_server.private_ip
-    config_port      = var.config_server_port
-    eureka_host      = aws_instance.eureka_server.private_ip
-    eureka_port      = var.eureka_server_port
-    backend_host     = aws_instance.backend.private_ip
-    backend_port     = var.backend_port
-    middleware_host  = ""
-    ca_cert          = local.ca_cert_content
-    server_cert      = local.middleware_server_cert
-    server_key       = local.middleware_server_key
-    client_cert      = ""
-    client_key       = ""
+    service_name = "middleware"
+    service_port = var.middleware_port
+    service_user = "svc_middleware"
+    config_host  = aws_instance.config_server.private_ip
+    config_port  = var.config_server_port
+    eureka_host  = aws_instance.eureka_server.private_ip
+    eureka_port  = var.eureka_server_port
+    backend_host = aws_instance.backend.private_ip
+    backend_port = var.backend_port
+    ca_cert      = local.ca_cert_content
+    server_cert  = local.middleware_server_cert
+    server_key   = local.middleware_server_key
   }))
 
   tags = {
@@ -192,10 +165,7 @@ resource "aws_instance" "user_bff" {
     eureka_port      = var.eureka_server_port
     middleware_host  = aws_instance.middleware.private_ip
     middleware_port  = var.middleware_port
-    backend_host     = ""
     ca_cert          = local.ca_cert_content
-    server_cert      = ""
-    server_key       = ""
     client_cert      = local.userbff_client_cert
     client_key       = local.userbff_client_key
   }))
@@ -225,22 +195,15 @@ resource "aws_instance" "cloud_gateway" {
   }
 
   user_data = base64encode(templatefile("${path.module}/provisioning/cloud-gateway.sh", {
-    service_name     = "cloud-gateway"
-    service_port     = var.gateway_port
-    service_user     = "svc_gateway"
-    config_host      = aws_instance.config_server.private_ip
-    config_port      = var.config_server_port
-    eureka_host      = aws_instance.eureka_server.private_ip
-    eureka_port      = var.eureka_server_port
-    user_bff_host    = aws_instance.user_bff.private_ip
-    user_bff_port    = var.user_bff_port
-    middleware_host  = ""
-    backend_host     = ""
-    ca_cert          = local.ca_cert_content
-    server_cert      = ""
-    server_key       = ""
-    client_cert      = ""
-    client_key       = ""
+    service_name  = "cloud-gateway"
+    service_port  = var.gateway_port
+    service_user  = "svc_gateway"
+    config_host   = aws_instance.config_server.private_ip
+    config_port   = var.config_server_port
+    eureka_host   = aws_instance.eureka_server.private_ip
+    eureka_port   = var.eureka_server_port
+    user_bff_host = aws_instance.user_bff.private_ip
+    user_bff_port = var.user_bff_port
   }))
 
   tags = {
@@ -266,12 +229,8 @@ resource "null_resource" "wait_for_services" {
   ]
 
   provisioner "local-exec" {
-    command     = <<-EOT
-      echo "Waiting for services to start (this may take 8-10 minutes)..."
-      sleep 480
-      echo "Initial wait complete. Running health checks..."
-    EOT
-    interpreter = ["bash", "-c"]
+    command     = "Write-Host 'Waiting for services to start (this may take 8-10 minutes)...'; Start-Sleep -Seconds 480; Write-Host 'Initial wait complete.'"
+    interpreter = ["PowerShell", "-Command"]
   }
 }
 
@@ -288,11 +247,67 @@ resource "null_resource" "sanity_check" {
 
   provisioner "local-exec" {
     command     = <<-EOT
-      bash ${path.module}/sanity/sanity-check.sh \
-        "${aws_instance.cloud_gateway.public_ip}" \
-        "${var.gateway_port}" \
-        "${path.module}"
+      $gateway_ip = "${aws_instance.cloud_gateway.public_ip}"
+      $gateway_port = "${var.gateway_port}"
+      $report_path = "${path.module}/sanity-report.txt"
+      
+      Write-Host "Running sanity checks against http://$gateway_ip`:$gateway_port"
+      
+      $results = @()
+      $passed = 0
+      $failed = 0
+      
+      # Test REST endpoint
+      try {
+        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/users/health" -TimeoutSec 30
+        $results += "REST Health: PASSED"
+        $passed++
+      } catch {
+        $results += "REST Health: FAILED - $($_.Exception.Message)"
+        $failed++
+      }
+      
+      # Test REST data endpoint
+      try {
+        $body = @{name="TestUser";email="test@example.com"} | ConvertTo-Json
+        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/users/data" -Method POST -Body $body -ContentType "application/json" -TimeoutSec 30
+        if ($response.servedBy -eq "backend") {
+          $results += "REST->Middleware->Backend: PASSED"
+          $passed++
+        } else {
+          $results += "REST->Middleware->Backend: FAILED - Unexpected response"
+          $failed++
+        }
+      } catch {
+        $results += "REST->Middleware->Backend: FAILED - $($_.Exception.Message)"
+        $failed++
+      }
+      
+      # Test GraphQL endpoint
+      try {
+        $gqlBody = @{query="{ health }"} | ConvertTo-Json
+        $response = Invoke-RestMethod -Uri "http://$gateway_ip`:$gateway_port/api/users/graphql" -Method POST -Body $gqlBody -ContentType "application/json" -TimeoutSec 30
+        $results += "GraphQL Health: PASSED"
+        $passed++
+      } catch {
+        $results += "GraphQL Health: FAILED - $($_.Exception.Message)"
+        $failed++
+      }
+      
+      # Generate report
+      $report = "Netflix OSS Sanity Check Report`n"
+      $report += "================================`n"
+      $report += "Gateway: http://$gateway_ip`:$gateway_port`n"
+      $report += "Timestamp: $(Get-Date)`n"
+      $report += "`nResults:`n"
+      $results | ForEach-Object { $report += "  - $_`n" }
+      $report += "`nSummary: $passed passed, $failed failed`n"
+      
+      $report | Out-File -FilePath $report_path -Encoding UTF8
+      Write-Host $report
+      
+      if ($failed -gt 0) { exit 1 }
     EOT
-    interpreter = ["bash", "-c"]
+    interpreter = ["PowerShell", "-Command"]
   }
 }
