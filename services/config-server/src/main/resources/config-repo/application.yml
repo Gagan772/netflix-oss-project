@@ -1,0 +1,19 @@
+# Default configuration for all services
+spring:
+  cloud:
+    config:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,refresh
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.netflix.oss: DEBUG

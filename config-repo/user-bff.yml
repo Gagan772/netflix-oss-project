@@ -1,0 +1,43 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-bff
+  graphql:
+    graphiql:
+      enabled: true
+    path: /graphql
+    schema:
+      locations: classpath:graphql/
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+middleware:
+  url: https://${MIDDLEWARE_HOST:localhost}:${MIDDLEWARE_PORT:8082}
+  ssl:
+    trust-store: /opt/user-bff/certs/truststore.p12
+    trust-store-password: changeit
+    key-store: /opt/user-bff/certs/client-keystore.p12
+    key-store-password: changeit
+    key-password: changeit
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.netflix.oss: DEBUG

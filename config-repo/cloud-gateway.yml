@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cloud-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: user-bff-rest
+          uri: lb://user-bff
+          predicates:
+            - Path=/api/rest/**
+        - id: user-bff-soap
+          uri: lb://user-bff
+          predicates:
+            - Path=/ws/**
+        - id: user-bff-graphql
+          uri: lb://user-bff
+          predicates:
+            - Path=/graphql/**
+        - id: user-bff-graphiql
+          uri: lb://user-bff
+          predicates:
+            - Path=/graphiql/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

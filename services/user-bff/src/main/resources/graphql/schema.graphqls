@@ -1,0 +1,12 @@
+type Query {
+    userStatus(id: String!): UserStatus
+}
+
+type UserStatus {
+    id: String!
+    status: String!
+    servedBy: String
+    mtlsVerified: Boolean
+    clientCN: String
+    backendVersion: String
+}

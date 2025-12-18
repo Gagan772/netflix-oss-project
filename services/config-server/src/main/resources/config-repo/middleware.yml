@@ -1,0 +1,49 @@
+server:
+  port: 8082
+  ssl:
+    enabled: true
+    client-auth: need
+    key-store: /opt/middleware/certs/server-keystore.p12
+    key-store-password: changeit
+    key-store-type: PKCS12
+    trust-store: /opt/middleware/certs/truststore.p12
+    trust-store-password: changeit
+    trust-store-type: PKCS12
+
+spring:
+  application:
+    name: middleware
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.uuid}
+    secure-port-enabled: true
+    secure-port: ${server.port}
+    non-secure-port-enabled: false
+
+backend:
+  url: http://${BACKEND_HOST:localhost}:${BACKEND_PORT:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  server:
+    port: 8092
+    ssl:
+      enabled: false
+
+logging:
+  level:
+    com.netflix.oss: DEBUG
+    org.springframework.security: DEBUG

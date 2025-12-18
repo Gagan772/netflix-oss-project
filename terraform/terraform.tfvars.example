@@ -1,0 +1,48 @@
+# =============================================================================
+# Netflix OSS Terraform Variables Example
+# =============================================================================
+# Copy this file to terraform.tfvars and customize as needed.
+# Most defaults should work for a demo deployment.
+# =============================================================================
+
+# AWS Region (default: us-east-1)
+# aws_region = "us-east-1"
+
+# Project name used for resource naming
+# project_name = "netflix-oss"
+
+# Environment name
+# environment = "demo"
+
+# VPC CIDR block
+# vpc_cidr = "10.0.0.0/16"
+
+# EC2 Instance type
+# instance_type = "t3.medium"
+
+# SSH key name (will be created automatically)
+# key_name = "netflix-oss-key"
+
+# CIDR block for SSH access (set to your IP for better security)
+# Example: allowed_ssh_cidr = "YOUR_PUBLIC_IP/32"
+# allowed_ssh_cidr = "0.0.0.0/0"
+
+# CIDR block for HTTP access to gateway
+# Example: allowed_http_cidr = "YOUR_PUBLIC_IP/32"
+# allowed_http_cidr = "0.0.0.0/0"
+
+# Service ports (defaults are recommended)
+# config_server_port = 8888
+# eureka_server_port = 8761
+# gateway_port = 8080
+# user_bff_port = 8081
+# middleware_port = 8082
+# backend_port = 8083
+
+# Common tags for all resources
+# common_tags = {
+#   Project     = "Netflix-OSS"
+#   Environment = "Demo"
+#   ManagedBy   = "Terraform"
+#   Owner       = "YourName"
+# }

@@ -1,0 +1,51 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!terraform.tfvars.example
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# SSH Keys
+*.pem
+*.key
+
+# Certificates
+terraform/certs/
+
+# Sanity reports
+sanity-report.json
+sanity-report.txt
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Java/Maven
+target/
+*.jar
+*.war
+*.class
+*.log
+
+# Node
+node_modules/
+
+# Temp
+*.tmp
+*.temp
+*.swp
+*~
