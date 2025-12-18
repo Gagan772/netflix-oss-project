@@ -2,6 +2,10 @@
 
 A complete, production-ready Netflix OSS microservices architecture deployed on AWS EC2 using Terraform with **zero manual steps**.
 
+## 🎬 Architecture Animation
+
+![Netflix OSS Architecture](architecture.gif)
+
 ## Architecture Overview
 
 ```
